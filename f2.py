@@ -1,6 +1,6 @@
-from typing import Iterable, List, Any, Callable, TypeVar, Iterator
+from typing import Iterable, List, Any, Callable, TypeVar, Iterator, Union
 from functools import reduce, partial, singledispatch
-from itertools import chain
+from itertools import chain, compress, starmap
 from operator import itemgetter, add, neg, attrgetter
 
 T = TypeVar('T')
@@ -20,7 +20,7 @@ def cdr(iterable: Iterable[T]):
     return advanced_iter
 
 
-class fun2:
+class Fun:
     _data: List[T]
     operations = list()
 
@@ -84,8 +84,16 @@ class fun2:
         self.operations.extend([set, list])
         return self
 
+    def mask(self, mask: Iterable[bool]):
+        self.operations.extend(partial(compress, selectors=map(bool, mask)))
+        return self
+
+    def map_apply(self, ufunc):
+        self.operations.extend(partial(starmap, ufunc))
+        return self
+
     def collect(self):
         data = self._data
         for func in self.operations:
             data = func(data)
-        return list(data)
+        return data if (not hasattr(data, '__dict__')) or ('__iter__' not in data.__dict__) else list(data)
