@@ -1,6 +1,6 @@
 from functools import reduce, partial
 from itertools import compress, starmap
-from operator import itemgetter, neg, attrgetter
+from operator import itemgetter, attrgetter, le, ge
 from typing import Iterable, List, Any, Callable, TypeVar
 
 T = TypeVar('T')
@@ -57,29 +57,12 @@ class Fun:
         self.operations.append(reversed)
         return self
 
-    def min(self):
-        self.operations.append(min)
-        return self
-
-    def max(self):
-        self.operations.append(max)
-        return self
-
-    def negate(self):
-        self.operations.append(partial(map, neg))
-        return self
-
     def getitem(self, *args, **kwargs):
         self.operations.append(itemgetter(*args, **kwargs))
         return self
 
     def getattr(self, *args, **kwargs):
         self.operations.append(attrgetter(*args, **kwargs))
-        return self
-
-    def unique(self, by=noop):
-        # TODO: allow generic uniqueness
-        self.operations.extend([set, list])
         return self
 
     def mask(self, mask: Iterable[bool]):

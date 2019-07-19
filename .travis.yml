@@ -4,9 +4,9 @@ python: 3.7
 dist: xenial
 cache: pip
 install:
-  - pip install pycodestyle pylint mypy
+  - pip install -r requirements-test.txt
   - pip install -e f2
 script:
   - git grep -l . -- '*.py' | xargs pylint
   - git grep -l . -- '*.py' | xargs mypy --ignore-missing-imports
-  - pytest .
+  - pytest . --cov=f2
