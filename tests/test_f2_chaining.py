@@ -18,5 +18,10 @@ class TestFunfunChaining(unittest.TestCase):
     def test_map_apply(self):
         range_size = 320000
 
+        leftval = Fun(range(range_size)).map(_add1).collect()
+        expected = list(range(1, range_size + 1))
+
+        self.assertListEqual(leftval, expected)
+
         result = Fun(range(range_size)).map(_add1).reduce(add).collect()
         self.assertEqual(sum(range(range_size)) + range_size, result)

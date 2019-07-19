@@ -21,11 +21,9 @@ def cdr(iterable: Iterable[T]):
 
 
 class Fun:
-    _data: List[T]
-    operations = list()
-
     def __init__(self, iterable: Iterable[T]):
         self._data = list(iterable)
+        self.operations = list()
 
     def map(self, ufunc: Callable[[T], Any]):
         self.operations.append(partial(map, ufunc))
@@ -93,7 +91,9 @@ class Fun:
         return self
 
     def collect(self):
-        data = self._data
         for func in self.operations:
-            data = func(data)
-        return data if (not hasattr(data, '__dict__')) or ('__iter__' not in data.__dict__) else list(data)
+            self._data = func(self._data)
+        try:
+            return list(self._data)
+        except TypeError:
+            return self._data
