@@ -1,7 +1,7 @@
-from typing import Iterable, List, Any, Callable, TypeVar, Iterator, Union
-from functools import reduce, partial, singledispatch
-from itertools import chain, compress, starmap
-from operator import itemgetter, add, neg, attrgetter
+from functools import reduce, partial
+from itertools import compress, starmap
+from operator import itemgetter, neg, attrgetter
+from typing import Iterable, List, Any, Callable, TypeVar
 
 T = TypeVar('T')
 
@@ -23,7 +23,7 @@ def cdr(iterable: Iterable[T]):
 class Fun:
     def __init__(self, iterable: Iterable[T]):
         self._data = list(iterable)
-        self.operations = list()
+        self.operations: List[Callable] = list()
 
     def map(self, ufunc: Callable[[T], Any]):
         self.operations.append(partial(map, ufunc))
@@ -42,14 +42,14 @@ class Fun:
         return self
 
     def flatten(self):
-        # stream must only contain items of the same type
-        self.operations.append(partial(reduce, add))
+        # TODO: benchmark this
+        def _generic_flatten_v1(obj: Iterable[Iterable[T]]) -> List[T]:
+            return [val for sublist in obj for val in sublist]
+
+        self.operations.append(_generic_flatten_v1)
         return self
 
-    def sorted(self, key: noop, reverse: bool = False):
-        # def _sorted_wrapper(key, reverse, data):
-        #     return sorted(data, key=key, reverse=reverse)
-
+    def sorted(self, key: Callable = noop, reverse: bool = False):
         self.operations.append(partial(sorted, key=key, reverse=reverse))
         return self
 
@@ -83,11 +83,11 @@ class Fun:
         return self
 
     def mask(self, mask: Iterable[bool]):
-        self.operations.extend(partial(compress, selectors=map(bool, mask)))
+        self.operations.append(partial(compress, selectors=map(bool, mask)))
         return self
 
     def map_apply(self, ufunc):
-        self.operations.extend(partial(starmap, ufunc))
+        self.operations.append(partial(starmap, ufunc))
         return self
 
     def collect(self):

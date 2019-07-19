@@ -5,6 +5,8 @@ dist: xenial
 cache: pip
 install:
   - pip install pycodestyle pylint mypy
+  - pip install -e f2
 script:
-  - pylint f2.py
-  - mypy f2.py --ignore-missing-imports
+  - git grep -l . -- '*.py' | xargs pylint
+  - git grep -l . -- '*.py' | xargs mypy --ignore-missing-imports
+  - pytest .
