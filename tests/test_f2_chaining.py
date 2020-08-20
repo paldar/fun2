@@ -31,7 +31,6 @@ class TestF2Chaining(unittest.TestCase):
     def test_filter(self):
         range_size = 320000
         result = Fun(range(range_size)).filter(lambda x: x < 5).collect()
-        self.assertEqual(len(result), 5)
         self.assertListEqual(result, list(range(5)))
 
     def test_sorted(self):
@@ -53,3 +52,11 @@ class TestF2Chaining(unittest.TestCase):
                   .map(itemgetter('name'))
                   .collect())
         self.assertListEqual(result, ['Susanna', 'Pekka', 'Johanna', 'Edvard'])
+
+    def test_flatmap(self):
+        sep = 1299
+        end = 3700
+        delta = 1
+        data = [list(range(sep)), list(range(sep, end))]
+        result = Fun(data).flatmap(lambda x: x + delta).collect()
+        self.assertListEqual(result, list(range(delta, end + delta)))

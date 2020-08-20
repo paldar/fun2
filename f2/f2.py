@@ -4,6 +4,7 @@ from operator import itemgetter, attrgetter, le, ge
 from typing import Iterable, List, Any, Callable, TypeVar
 
 T = TypeVar('T')
+ReturnType = TypeVar('ReturnType')
 
 
 def noop(obj: T) -> T:
@@ -20,12 +21,17 @@ def cdr(iterable: Iterable[T]):
     return advanced_iter
 
 
+# TODO: benchmark this
+def _generic_flatten_v1(obj: Iterable[Iterable[T]]) -> List[T]:
+    return [val for sublist in obj for val in sublist]
+
+
 class Fun:
     def __init__(self, iterable: Iterable[T]):
         self._data = list(iterable)
         self.operations: List[Callable] = list()
 
-    def map(self, ufunc: Callable[[T], Any]):
+    def map(self, ufunc: Callable[[T], ReturnType]):
         self.operations.append(partial(map, ufunc))
         return self
 
@@ -42,10 +48,6 @@ class Fun:
         return self
 
     def flatten(self):
-        # TODO: benchmark this
-        def _generic_flatten_v1(obj: Iterable[Iterable[T]]) -> List[T]:
-            return [val for sublist in obj for val in sublist]
-
         self.operations.append(_generic_flatten_v1)
         return self
 
@@ -71,6 +73,10 @@ class Fun:
 
     def map_apply(self, ufunc):
         self.operations.append(partial(starmap, ufunc))
+        return self
+
+    def flatmap(self, ufunc):
+        self.operations.extend([_generic_flatten_v1, partial(map, ufunc)])
         return self
 
     def collect(self):
